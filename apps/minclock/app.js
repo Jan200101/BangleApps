@@ -1,4 +1,7 @@
 {
+    g.clearRect(0, 0, g.getWidth()-1, g.getHeight());
+    // g.fillRect(Bangle.appRect);
+
     require("Font8x16").add(Graphics);
 
     const l = require("locale");
@@ -97,29 +100,29 @@
         }
         clock_info_items[k].item = info_item;
 
-        const redraw = () => {
+        const drawInfo = () => {
             const x = clock_info_items[k].x;
             const y = clock_info_items[k].y;
 
             g.reset()
                 .setFontAlign(0,0)
                 .setFont("8x16");
+
             const text = info_item.get("text");
             const str = (
                 info_item.hasRange ?
                     (isNaN(text.v) ? "--" : text.v.toString()) : null)
-                    || text.short || text.text;
+                    || text.short || text.text || "--";
             const h = 8;
-            const w = g.stringWidth(str) / 2;
-
+            const w = g.stringWidth(str+"---") / 2;
 
             g.clearRect(x-w, y-h, x+w, y+h)
                 .drawString(str, x, y);
         };
 
-        info_item.on("redraw", redraw);
-        redraw(); // redraw manually to prevent any pop-in
+        info_item.on("redraw", drawInfo);
         info_item.show();
+        drawInfo(); // redraw manually to prevent any pop-in
     });
 
     const drawSeconds = function() {
@@ -233,9 +236,6 @@
         // Hide
         () => { wu.hide(); },
     ][widgetState]();
-
-    g.clearRect(0, 0, g.getWidth()-1, g.getHeight());
-    // g.fillRect(Bangle.appRect);
 
     draw();
 }

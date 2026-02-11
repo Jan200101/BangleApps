@@ -29,6 +29,11 @@
         bt: "Battery",
         br: "Steps",
     };
+    const swipe = settings.swipe !== undefined ? settings.swipe :
+    {
+        left: "",
+        right: "",
+    };
 
     const c12h = l.is12Hours();
     const time_segments = (showSeconds ? 4: 3);
@@ -61,7 +66,7 @@
             get: () => {
                 date = new Date();
                 const month = date.getMonth()+1;
-                const day = date.getDay()+1;
+                const day = date.getDate();
 
                 return { short: month+"-"+day, text: undefined };
             },
@@ -201,20 +206,31 @@
         drawSecondsTimeout = undefined;
     };
 
-    const lcdPower = function(on){
+    const lcdPower = (on) => {
         if (on) draw();
         else clearAllTimeouts();
     };
 
     // for better Bangle.JS 1 support
-    Bangle.on('lcdPower', lcdPower);
+    Bangle.on("lcdPower", lcdPower);
+
+    const onSwipe = (lr, ud) => {
+        if (ud) return;
+
+        const src = (lr > 0 ? swipe.right : swipe.left) || "";
+        if (!src.length) return;
+        load(src);
+    };
+
+    Bangle.on("swipe", onSwipe);
 
     Bangle.setUI({
         mode : "clock",
         remove : function() {
             clearAllTimeouts();
 
-            Bangle.removeListener('lcdPower', lcdPower);
+            Bangle.removeListener("lcdPower", lcdPower);
+            Bangle.removeListener("swipe", onSwipe);
             delete Graphics.prototype.setFont8x16;
 
             Object.keys(clock_info_items).forEach((k) => clock_info_items[k].item.hide());

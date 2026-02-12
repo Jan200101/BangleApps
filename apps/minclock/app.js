@@ -50,6 +50,7 @@
     const ly = y*3;
     const sx = tx * 3;
 
+    const clock_info_keys = Object.keys(clock_info);
     const clock_info_items = {
         tl: { x: x  , y: y-8,  item: undefined },
         to: { x: x*2, y: y,    item: undefined },
@@ -58,6 +59,7 @@
         bt: { x: x*2, y: ly,   item: undefined },
         br: { x: x*3, y: ly+8, item: undefined },
     };
+    const cd = 20;
 
     const builtin_info = [
         {
@@ -87,7 +89,7 @@
         },
     ];
 
-    Object.keys(clock_info).forEach((k) => {
+    clock_info_keys.forEach((k) => {
         const info_key = clock_info[k];
         if (info_key.length == 0) return;
         let info_item;
@@ -119,7 +121,7 @@
                     (isNaN(text.v) ? "--" : text.v.toString()) : null)
                     || text.short || text.text || "--";
             const h = 8;
-            const w = g.stringWidth(str+"---") / 2;
+            const w = cd;
 
             g.clearRect(x-w, y-h, x+w, y+h)
                 .drawString(str, x, y);
@@ -224,6 +226,18 @@
 
     Bangle.on("swipe", onSwipe);
 
+    const onTouch = (button, xy) => {
+        clock_info_keys.forEach((k) => {
+            const info = clock_info_items[k];
+            if (info.item && info.item.run &&
+                xy.x > info.x-cd &&
+                xy.x < info.x+cd &&
+                xy.y > info.y-cd &&
+                xy.y < info.y+cd) info.item.run();
+        });
+    };
+    Bangle.on("touch", onTouch);
+
     Bangle.setUI({
         mode : "clock",
         remove : function() {
@@ -231,6 +245,7 @@
 
             Bangle.removeListener("lcdPower", lcdPower);
             Bangle.removeListener("swipe", onSwipe);
+            Bangle.removeListener("touch", onTouch);
             delete Graphics.prototype.setFont8x16;
 
             Object.keys(clock_info_items).forEach((k) => clock_info_items[k].item.hide());
